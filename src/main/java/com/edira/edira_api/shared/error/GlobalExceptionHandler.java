@@ -17,12 +17,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.List;
 
 /*Para leer el archivo y para mi yo del futuro:
-        Linea 39: Error 400 body (MethodArgumentNotValidException)
-        Linea 71: Error 400 params (ConstraintViolationException)
-        Linea 101: Error 400 (IllegalArgumentException)
-        Linea 130: Error 404 (NotFoundException)
-        Linea 148: Error 409 (DataIntegrityViolation)
-        Linea 162: Error 500 (fallback)
+        Linea 37: Error 400 body (MethodArgumentNotValidException)
+        Linea 69: Error 400 params (ConstraintViolationException)
+        Linea 103: Error 404 (NotFoundException)
+        Linea 127: Error 400 (IllegalArgumentException)
+        Linea 145: Error 409 (DataIntegrityViolation)
+        Linea 159: Error 401 (UnauthorizedException)
+        Linea 182: Error 403 (ForbiddenException)
+        Linea 204: Error 500 (fallback)
  */
 
 @RestControllerAdvice
@@ -151,6 +153,50 @@ public class GlobalExceptionHandler {
         log.warn("409 CONFLICT path={} errorId={}", path, body.errorId());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
 
+    }
+
+    //Para errores de autenticación (401 UNAUTHORIZED)
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiError> handleUnauthorized(
+            UnauthorizedException ex,
+            HttpServletRequest request) {
+
+        String path = request.getRequestURI();
+        int status = HttpStatus.UNAUTHORIZED.value();
+        ErrorCode code = ErrorCode.UNAUTHORIZED;
+        String message = (ex.getMessage() != null && !ex.getMessage().isBlank())
+                ? ex.getMessage()
+                : "Autenticación requerida.";
+
+        ApiError body = ApiError.of(status, code, message, path);
+
+        log.warn("401 UNAUTHORIZED path={} errorId={}", path, body.errorId());
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(body);
+    }
+
+    //Para errores de autorización (403 FORBIDDEN)
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiError> handleForbidden(
+            ForbiddenException ex,
+            HttpServletRequest request) {
+
+        String path = request.getRequestURI();
+        int status = HttpStatus.FORBIDDEN.value();
+        ErrorCode code = ErrorCode.FORBIDDEN;
+        String message = (ex.getMessage() != null && !ex.getMessage().isBlank())
+                ? ex.getMessage()
+                : "Acceso denegado.";
+
+        ApiError body = ApiError.of(status, code, message, path);
+
+        log.warn("403 FORBIDDEN path={} errorId={}", path, body.errorId());
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(body);
     }
 
     //fallback 500

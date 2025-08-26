@@ -2,6 +2,8 @@ package com.edira.edira_api.shared.error;
 
 import com.edira.edira_api.shared.validation.ValidationErrorDetail;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.UUID;
 import java.time.Instant;
 import java.util.List;
@@ -9,14 +11,23 @@ import java.util.List;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 
+@Schema(name = "ApiError", description = "Contrato estándar de error de Edira-API")
 public record ApiError(
+
+        @Schema(description = "Instante del error en UTC")
         Instant timestamp,
+        @Schema(description = "Ruta solicitada")
         String path,
+        @Schema(description = "Código HTTP")
         int status,
+        @Schema(description = "Código lógico de negocio")
         ErrorCode code,
+        @Schema(description = "Mensaje personalizado para cada caso")
         String message,
+        @Schema(description = "Detalle de validaciones por campo (si aplica)")
         @JsonInclude(NON_EMPTY)
         List<ValidationErrorDetail> details,
+        @Schema(description = "Correlación del error para logs")
         UUID errorId
 ) {
     //Metodo vacio generico.
